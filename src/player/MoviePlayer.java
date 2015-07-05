@@ -6,15 +6,15 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import javafx.util.Duration;
-import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Slider;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.input.InputEvent;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -101,21 +101,17 @@ import javafx.stage.Stage;
 //}
 
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-
-
 public class MoviePlayer{
 
 	private final SimpleStringProperty fileName;
 	private final SimpleStringProperty status;
 	private final SimpleStringProperty currentTime;
 	
+	MediaPlayer player = null;
+	
 	Stage subStage = new Stage();
 	
-	public MoviePlayer(File file, String fileName) {
+	public MoviePlayer(File file, String fileName, Controller con) {
 		
 		this.fileName = new SimpleStringProperty(file.getName());
 		this.status = new SimpleStringProperty("stop");
@@ -127,7 +123,7 @@ public class MoviePlayer{
 		Path path = Paths.get(file.getAbsolutePath());
 		Media media = new Media(path.toUri().toString());
 
-		final MediaPlayer player = new MediaPlayer(media);
+		player = new MediaPlayer(media);
 		MediaView view = new MediaView(player);
 
 		final VBox vbox = new VBox();
@@ -136,12 +132,46 @@ public class MoviePlayer{
 
 		root.getChildren().add(view);
 		root.getChildren().add(vbox);
+		
+		final DoubleProperty width = view.fitWidthProperty();
+	    final DoubleProperty height = view.fitHeightProperty();
+	    width.bind(Bindings.selectDouble(view.sceneProperty(), "width"));
+	    height.bind(Bindings.selectDouble(view.sceneProperty(), "height"));
+	    view.setPreserveRatio(false);
+	    
 
 		Scene scene = new Scene(root, 400, 400, Color.BLACK);
 		subStage.setScene(scene);
 		subStage.show();
 		
-		player.play();
+		EventHandler<KeyEvent> handler = new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent event) {
+				if(event.getCode() == KeyCode.ENTER){
+					if(subStage.isFullScreen())
+					{
+						//subStage.setFullScreen(false);
+						con.fullscreenout();
+					}
+					else
+					{
+						//subStage.setFullScreen(true);
+						con.fullscreen();
+					}
+					
+				}
+				if(event.getCode() == KeyCode.SPACE){
+					System.out.println(player.getStatus());
+					if(player.getStatus() != MediaPlayer.Status.PLAYING)
+						con.allPlay();
+					else
+						con.allPause();
+				}
+				 
+			}
+		};
+		scene.addEventHandler(KeyEvent.KEY_PRESSED, handler);
+		
 		player.setOnReady(new Runnable() {
 
 			@Override
@@ -154,13 +184,19 @@ public class MoviePlayer{
 				System.out.println("h : " + h);
 				subStage.setMinWidth(w);
 				subStage.setMinHeight(h);
+				subStage.sizeToScene();
+				
+				subStage.setAlwaysOnTop(true);
 
 				vbox.setMinSize(w - 50, 100);
 				vbox.setTranslateX(25);
 				vbox.setTranslateY(h - 100);
 				
-				view.setFitWidth(subStage.getWidth());
-				view.setFitHeight(subStage.getHeight());
+				//player.getCurrentTime();
+				
+				//windows7 frame size set
+				subStage.setWidth(subStage.getWidth() + (subStage.getWidth() - scene.getWidth()));
+				subStage.setHeight(subStage.getHeight() + (subStage.getHeight() - scene.getHeight()));
 
 //				slider.setMin(0.0);
 //				slider.setValue(0.0);
