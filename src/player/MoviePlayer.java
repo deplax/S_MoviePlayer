@@ -220,3 +220,5 @@ public class MoviePlayer{
 
 
 }
+
+// http://stackoverflow.com/questions/13030556/multiple-javafx-stages-in-fullscreen-mode
