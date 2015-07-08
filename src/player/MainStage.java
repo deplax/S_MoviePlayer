@@ -3,8 +3,6 @@ package player;
 import java.io.File;
 
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -22,6 +20,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
+import javafx.util.Duration;
 
 public class MainStage extends Application {
 
@@ -38,50 +37,49 @@ public class MainStage extends Application {
 		launch(args);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void start(javafx.stage.Stage primaryStage) throws Exception {
-		
+
 		testInit();
 
 		Scene scene = new Scene(new Group());
-		
-//		scene.widthProperty().addListener(new ChangeListener<Number>() {
-//			@Override
-//			public void changed(ObservableValue<? extends Number> observable, Number oldValue,
-//					Number newValue) {
-//				System.out.println("Width : " + scene.getWidth());
-//				System.out.println("Width : " + primaryStage.getWidth());
-//				
-//			}
-//		});
-		
+
 		primaryStage.setTitle("primaryStage");
 		primaryStage.setWidth(400);
 		primaryStage.setHeight(500);
-		
-		con = new Controller(data);
-		
+
+		con = new Controller(data, table);
 
 		Label label = new Label("Image Controller");
 		label.setFont(new Font("Arial", 20));
 		table.setPrefSize(330, 400);
 
 		// Table column Setting
-		TableColumn<MoviePlayer, String> columnFileName = new TableColumn<MoviePlayer, String>("FileName");
+		TableColumn<MoviePlayer, String> sound = new TableColumn<MoviePlayer, String>(
+				"Sound");
+		sound.setCellValueFactory(new PropertyValueFactory<MoviePlayer, String>(
+				"sound"));
+
+		TableColumn<MoviePlayer, String> columnFileName = new TableColumn<MoviePlayer, String>(
+				"FileName");
 		columnFileName
 				.setCellValueFactory(new PropertyValueFactory<MoviePlayer, String>(
 						"fileName"));
-		TableColumn<MoviePlayer, String> columnStatus = new TableColumn<MoviePlayer, String>("Status");
+		TableColumn<MoviePlayer, String> columnStatus = new TableColumn<MoviePlayer, String>(
+				"Status");
 		columnStatus
 				.setCellValueFactory(new PropertyValueFactory<MoviePlayer, String>(
 						"status"));
-		TableColumn<MoviePlayer, String> columnCurrentTime = new TableColumn<MoviePlayer, String>("CurrentTime");
+		TableColumn<MoviePlayer, String> columnCurrentTime = new TableColumn<MoviePlayer, String>(
+				"CurrentTime");
 		columnCurrentTime
 				.setCellValueFactory(new PropertyValueFactory<MoviePlayer, String>(
 						"CurrentTime"));
 
 		table.setItems(data);
-		table.getColumns().addAll(columnCurrentTime, columnFileName,
+		table.setEditable(true);
+		table.getColumns().addAll(sound, columnCurrentTime, columnFileName,
 				columnStatus);
 
 		TextField filePath = new TextField();
@@ -111,7 +109,8 @@ public class MainStage extends Application {
 				if (file != null) {
 					data.add(new MoviePlayer(file, fileName, con));
 					no++;
-					//file = null;
+					// 테스트를 위하여 file을 초기화 시키지 않는다.
+					// file = null;
 					filePath.setText("Select movie...");
 				}
 			}
@@ -122,27 +121,69 @@ public class MainStage extends Application {
 
 			@Override
 			public void handle(ActionEvent event) {
+
 				MoviePlayer m = table.getSelectionModel().getSelectedItem();
 				if (m != null) {
-					System.out.println(m.getFileName());
+					m.player.stop();
+					m.player.dispose();
 					m.subStage.close();
 					data.remove(m);
 				}
 			}
 		});
-		
-		Button playButton = new Button("play");
-		playButton.setOnAction(new EventHandler<ActionEvent>() {
+
+		Button muteButton = new Button("mute");
+		muteButton.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent event) {
-				con.allPlay();
+				MoviePlayer m = table.getSelectionModel().getSelectedItem();
+				if (m != null) {
+					if (m.player.isMute())
+						m.player.setMute(false);
+					else
+						m.player.setMute(true);
+				}
+			}
+		});
+		
+		Button syncButton = new Button("sync");
+		syncButton.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				MoviePlayer m = table.getSelectionModel().getSelectedItem();
+				MoviePlayer m2 = data.get(0);
+				if (m != null) {
+					double diff = m.player.getCurrentTime().toSeconds() - m2.player.getCurrentTime().toSeconds();
+					System.out.println("------------------");
+					System.out.println(m.player.getCurrentTime());
+					System.out.println(m2.player.getCurrentTime());
+					System.out.println(diff);
+					System.out.println("------------------");
+					if(diff < -0.10){
+						System.out.println("sync +");
+						Duration time = Duration.seconds(0.3);
+						m.player.seek(m.player.getCurrentTime().add(time));
+					}else if(diff > 0.10){
+						System.out.println("sync -");
+						Duration time = Duration.seconds(0.3);
+						m.player.seek(m.player.getCurrentTime().subtract(time));
+					}
+					diff = m.player.getCurrentTime().toSeconds() - m2.player.getCurrentTime().toSeconds();
+					System.out.println(diff);
+					System.out.println("------------------");
+				}				
 			}
 		});
 
+		VBox vboxCon = new VBox();
+		vboxCon.setSpacing(5);
+		vboxCon.getChildren().addAll(delButton, muteButton, syncButton);
+
 		HBox hboxTable = new HBox();
 		hboxTable.setSpacing(5);
-		hboxTable.getChildren().addAll(table, delButton, playButton);
+		hboxTable.getChildren().addAll(table, vboxCon);
 
 		HBox hbox = new HBox();
 		hbox.setSpacing(5);
@@ -155,21 +196,21 @@ public class MainStage extends Application {
 
 		((Group) scene.getRoot()).getChildren().addAll(vbox);
 
-		primaryStage.setScene(scene);		
+		primaryStage.setScene(scene);
 		primaryStage.show();
-		
-		//windows7 frame size set
-		primaryStage.setWidth(primaryStage.getWidth() + (primaryStage.getWidth() - scene.getWidth()));
-		primaryStage.setHeight(primaryStage.getHeight() + (primaryStage.getHeight() - scene.getHeight()));
-		
-	}
-	
-	public void testInit(){
-		file = new File("C:\\Users\\Administrator\\Desktop\\[MV] IU(아이유) _ Friday(금요일에 만나요) (Feat. Jang Yi-jeong(장이정) of HISTORY(히스토리)).mp4");
+
+		// windows7 frame size set
+		primaryStage.setWidth(primaryStage.getWidth()
+				+ (primaryStage.getWidth() - scene.getWidth()));
+		primaryStage.setHeight(primaryStage.getHeight()
+				+ (primaryStage.getHeight() - scene.getHeight()));
+
 	}
 
+	public void testInit() {
+		// file = new
+		// File("C:\\Users\\Administrator\\Desktop\\[MV] IU(아이유) _ Friday(금요일에 만나요) (Feat. Jang Yi-jeong(장이정) of HISTORY(히스토리)).mp4");
+		file = new File(
+				"/Users/Deplax/Desktop/[HIT] 프로듀사 - 김수현, 폭우로 손 우산에 아이유 ‘심쿵’ 하지만 카메라 챙겼다.20150529.mp4");
+	}
 }
-
-// 각 화면이 최대화 되도록.
-// 플레이어 싱크 기능.
-// 사운드 컨트롤.
