@@ -43,15 +43,18 @@ public class MainStage extends Application {
 
 		testInit();
 
+		int buttonWidth = 48;
+		
 		Scene scene = new Scene(new Group());
 
-		primaryStage.setTitle("primaryStage");
+		primaryStage.setTitle("©Jungju An");
 		primaryStage.setWidth(400);
 		primaryStage.setHeight(500);
+		primaryStage.setResizable(false);
 
 		con = new Controller(data, table);
 
-		Label label = new Label("Image Controller");
+		Label label = new Label("Sync Controller");
 		label.setFont(new Font("Arial", 20));
 		table.setPrefSize(330, 400);
 
@@ -117,6 +120,7 @@ public class MainStage extends Application {
 		});
 
 		Button delButton = new Button("del");
+		delButton.setPrefWidth(buttonWidth);
 		delButton.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -128,11 +132,13 @@ public class MainStage extends Application {
 					m.player.dispose();
 					m.subStage.close();
 					data.remove(m);
+					con.reflashTable();
 				}
 			}
 		});
 
 		Button muteButton = new Button("mute");
+		muteButton.setPrefWidth(buttonWidth);
 		muteButton.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -143,11 +149,14 @@ public class MainStage extends Application {
 						m.player.setMute(false);
 					else
 						m.player.setMute(true);
+					m.updateValue();
+					con.reflashTable();
 				}
 			}
 		});
 		
 		Button syncButton = new Button("sync");
+		syncButton.setPrefWidth(buttonWidth);
 		syncButton.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -211,6 +220,6 @@ public class MainStage extends Application {
 		// file = new
 		// File("C:\\Users\\Administrator\\Desktop\\[MV] IU(아이유) _ Friday(금요일에 만나요) (Feat. Jang Yi-jeong(장이정) of HISTORY(히스토리)).mp4");
 		file = new File(
-				"/Users/Deplax/Desktop/[HIT] 프로듀사 - 김수현, 폭우로 손 우산에 아이유 ‘심쿵’ 하지만 카메라 챙겼다.20150529.mp4");
+				"/Users/Deplax/Desktop/Where Am I (30 Second Short Film).mp4");
 	}
 }

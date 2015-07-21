@@ -16,10 +16,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
+import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -27,6 +29,7 @@ import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
@@ -38,12 +41,19 @@ public class MoviePlayer {
 	private SimpleStringProperty sound;
 
 	MediaPlayer player = null;
-
+	Scene scene = null;
 	Stage subStage = new Stage();
+
+	double mouseX = 0;
+	double mouseY = 0;
+	double mousediffX = 0;
+	double mousediffY = 0;
+	long startTime = 0;
+	long endTime = 0;
 
 	public MoviePlayer(File file, String fileName, Controller con) {
 
-		subStage.setTitle("subStage");
+		subStage.setTitle("©Jungju An");
 		Group root = new Group();
 
 		Path path = Paths.get(file.getAbsolutePath());
@@ -57,7 +67,7 @@ public class MoviePlayer {
 		this.currentTime = new SimpleStringProperty(player.getCurrentTime()
 				.toString());
 		this.sound = new SimpleStringProperty();
-		this.sound.set(player.isMute() ? "mute":"unmute");
+		this.sound.set(player.isMute() ? "mute" : "unmute");
 
 		final VBox vbox = new VBox();
 
@@ -68,10 +78,11 @@ public class MoviePlayer {
 		final DoubleProperty height = view.fitHeightProperty();
 		width.bind(Bindings.selectDouble(view.sceneProperty(), "width"));
 		height.bind(Bindings.selectDouble(view.sceneProperty(), "height"));
-		view.setPreserveRatio(false);
+		view.setPreserveRatio(true);
 
-		Scene scene = new Scene(root, 400, 400, Color.BLACK);
+		scene = new Scene(root, 400, 400, Color.BLACK);
 		subStage.setScene(scene);
+		subStage.centerOnScreen();
 		subStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
 			@Override
@@ -79,21 +90,17 @@ public class MoviePlayer {
 				player.stop();
 				player.dispose();
 				con.data.remove(player);
+				updateValue();
+				con.reflashTable();
 			}
 		});
 		subStage.show();
-
-		// 일단 스크린을 받아온다.
-		// ㄴ 스크린의 개수, 크기
-		// 이건 윈도우쪽으로 가게되면 만들자.
-		Screen screen = Screen.getPrimary();
-		System.out.println(screen.getVisualBounds().getWidth());
-		System.out.println(screen.getVisualBounds().getHeight());
 
 		// 키 이벤트를 따로따로 걸어주자.
 		EventHandler<KeyEvent> handler = new EventHandler<KeyEvent>() {
 			@Override
 			public void handle(KeyEvent event) {
+
 				if (event.getCode() == KeyCode.ENTER) {
 					// if(subStage.isFullScreen())
 					// {
@@ -106,12 +113,11 @@ public class MoviePlayer {
 					// con.fullscreen();
 					// }
 					System.out.println(player.getCurrentTime());
-
 				}
 				if (event.getCode() == KeyCode.SPACE) {
 					if (player.getStatus() != MediaPlayer.Status.PLAYING) {
 						con.allPlay();
-						
+
 					} else {
 						con.allPause();
 						con.setSyncTime(player.getCurrentTime());
@@ -119,6 +125,8 @@ public class MoviePlayer {
 						con.reflashTable();
 					}
 				}
+				updateValue();
+				con.reflashTable();
 
 			}
 		};
@@ -132,8 +140,6 @@ public class MoviePlayer {
 				int w = player.getMedia().getWidth();
 				int h = player.getMedia().getHeight();
 
-				System.out.println("w : " + w);
-				System.out.println("h : " + h);
 				subStage.setMinWidth(w);
 				subStage.setMinHeight(h);
 				subStage.sizeToScene();
@@ -151,6 +157,49 @@ public class MoviePlayer {
 
 		});
 
+		player.setOnEndOfMedia(new Runnable() {
+			@Override
+			public void run() {
+				if (con.isEveryplayerStop()) {
+					System.out.println("kuku");
+					con.setSyncTime(new Duration(0));
+					con.allPause();
+					con.sync();
+					con.allPlay();
+					con.reflashTable();
+				}
+			}
+		});
+
+		player.setOnPlaying(new Runnable() {
+			@Override
+			public void run() {
+
+				System.out.println("kku");
+				System.out.println(endTime - startTime);
+
+				// 마우스가 움직이지 않았으면.
+				if (mouseX == mousediffX && mouseY == mousediffY) {
+					endTime = System.currentTimeMillis();
+					if (endTime - startTime > 5000)
+						scene.setCursor(Cursor.NONE);
+				} else {
+					// 움직였으면 시간을 초기화.
+					startTime = System.currentTimeMillis();
+				}
+				mousediffX = mouseX;
+				mousediffY = mouseY;
+			}
+		});
+
+		scene.setOnMouseMoved(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent event) {
+				scene.setCursor(Cursor.DEFAULT);
+			}
+		});
+
 		player.currentTimeProperty().addListener(
 				new ChangeListener<Duration>() {
 
@@ -165,7 +214,7 @@ public class MoviePlayer {
 	}
 
 	public void updateValue() {
-		this.sound.set(player.isMute() ? "mute":"unmute");
+		this.sound.set(player.isMute() ? "mute" : "unmute");
 		this.currentTime.set(player.getCurrentTime().toString());
 		this.status.set(player.getStatus().toString());
 	}
