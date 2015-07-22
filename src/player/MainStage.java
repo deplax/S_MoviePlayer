@@ -41,8 +41,6 @@ public class MainStage extends Application {
 	@Override
 	public void start(javafx.stage.Stage primaryStage) throws Exception {
 
-		testInit();
-
 		int buttonWidth = 48;
 		
 		Scene scene = new Scene(new Group());
@@ -112,8 +110,7 @@ public class MainStage extends Application {
 				if (file != null) {
 					data.add(new MoviePlayer(file, fileName, con));
 					no++;
-					// 테스트를 위하여 file을 초기화 시키지 않는다.
-					// file = null;
+					file = null;
 					filePath.setText("Select movie...");
 				}
 			}
@@ -214,10 +211,5 @@ public class MainStage extends Application {
 		primaryStage.setHeight(primaryStage.getHeight()
 				+ (primaryStage.getHeight() - scene.getHeight()));
 
-	}
-
-	public void testInit() {
-		//file = new File( "C:\\Users\\Administrator\\Desktop\\Where Am I (30 Second Short Film).mp4");
-		file = new File( "/Users/Deplax/Desktop/Where Am I (30 Second Short Film).mp4");
 	}
 }

@@ -182,7 +182,8 @@ public class MoviePlayer {
 			public void handle(MouseEvent event) {
 				mouseX = event.getX();
 				mouseY = event.getY();
-				scene.setCursor(Cursor.DEFAULT);
+				System.out.println("마우스 보임");
+				con.showMouse();
 			}
 		});
 
@@ -194,9 +195,7 @@ public class MoviePlayer {
 							ObservableValue<? extends Duration> observable,
 							Duration oldValue, Duration newValue) {
 
-						// System.out.println(view.get);
-
-						// System.out.println(endTime - startTime);
+						 System.out.println(endTime - startTime);
 
 						// 마우스가 움직이지 않았으면.
 						if (mouseX == mousediffX && mouseY == mousediffY)
@@ -208,8 +207,10 @@ public class MoviePlayer {
 							startTime = System.currentTimeMillis();
 						} else {
 							endTime = System.currentTimeMillis();
-							if (endTime - startTime > 5000)
+							if (endTime - startTime > 2000) {
+								System.out.println("마우스 숨김");
 								scene.setCursor(Cursor.NONE);
+							}
 						}
 
 						mousediffX = mouseX;

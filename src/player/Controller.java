@@ -1,6 +1,7 @@
 package player;
 
 import javafx.collections.ObservableList;
+import javafx.scene.Cursor;
 import javafx.scene.control.TableView;
 import javafx.util.Duration;
 
@@ -72,6 +73,12 @@ public class Controller {
 			};
 		}
 		return false;
+	}
+	
+	public void showMouse(){
+		for (MoviePlayer moviePlayer : data) {
+			moviePlayer.scene.setCursor(Cursor.DEFAULT);
+		}
 	}
 	
 	public void sync(){
