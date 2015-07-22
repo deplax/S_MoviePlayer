@@ -217,7 +217,7 @@ public class MainStage extends Application {
 	}
 
 	public void testInit() {
-		file = new File( "C:\\Users\\Administrator\\Desktop\\Where Am I (30 Second Short Film).mp4");
-		//file = new File( "/Users/Deplax/Desktop/Where Am I (30 Second Short Film).mp4");
+		//file = new File( "C:\\Users\\Administrator\\Desktop\\Where Am I (30 Second Short Film).mp4");
+		file = new File( "/Users/Deplax/Desktop/Where Am I (30 Second Short Film).mp4");
 	}
 }

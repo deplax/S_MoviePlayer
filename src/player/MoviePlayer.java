@@ -24,6 +24,7 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -47,12 +48,15 @@ public class MoviePlayer {
 	Stage subStage = new Stage();
 
 	Boolean stopFlag = false;
-	
+
 	double mouseX = 0;
 	double mouseY = 0;
 	double mousediffX = 0;
 	double mousediffY = 0;
-	long startTime = 0;
+	
+	Boolean mouseMoveFlag = true;
+	
+	long startTime = System.currentTimeMillis();
 	long endTime = 0;
 
 	public MoviePlayer(File file, String fileName, Controller con) {
@@ -106,16 +110,6 @@ public class MoviePlayer {
 			public void handle(KeyEvent event) {
 
 				if (event.getCode() == KeyCode.ENTER) {
-					// if(subStage.isFullScreen())
-					// {
-					// //subStage.setFullScreen(false);
-					// con.fullscreenout();
-					// }
-					// else
-					// {
-					// //subStage.setFullScreen(true);
-					// con.fullscreen();
-					// }
 					System.out.println(player.getStatus());
 					System.out.println(player.getCurrentTime());
 				}
@@ -179,55 +173,41 @@ public class MoviePlayer {
 			}
 		});
 
-		player.setOnPlaying(new Runnable() {
-			@Override
-			public void run() {
-
-				System.out.println("kku");
-//				System.out.println(endTime - startTime);
-//
-//				// 마우스가 움직이지 않았으면.
-//				if (mouseX == mousediffX && mouseY == mousediffY) {
-//					endTime = System.currentTimeMillis();
-//					if (endTime - startTime > 5000)
-//						scene.setCursor(Cursor.NONE);
-//				} else {
-//					// 움직였으면 시간을 초기화.
-//					startTime = System.currentTimeMillis();
-//				}
-//				mousediffX = mouseX;
-//				mousediffY = mouseY;
-			}
-		});
-
 		scene.setOnMouseMoved(new EventHandler<MouseEvent>() {
 
 			@Override
 			public void handle(MouseEvent event) {
+				mouseX = event.getX();
+				mouseY = event.getY();
 				scene.setCursor(Cursor.DEFAULT);
 			}
 		});
+		
 
 		player.currentTimeProperty().addListener(
 				new ChangeListener<Duration>() {
-
+					
 					@Override
 					public void changed(
 							ObservableValue<? extends Duration> observable,
 							Duration oldValue, Duration newValue) {
 
 						System.out.println(endTime - startTime);
-						System.out.println(startTime);
-		
+
 						// 마우스가 움직이지 않았으면.
-						if (mouseX == mousediffX && mouseY == mousediffY) {
+						if (mouseX == mousediffX && mouseY == mousediffY)
+							mouseMoveFlag = false;
+						else
+							mouseMoveFlag = true;
+						
+						if(con.isMouseMove()){
+							startTime = System.currentTimeMillis();
+						}else{
 							endTime = System.currentTimeMillis();
 							if (endTime - startTime > 5000)
 								scene.setCursor(Cursor.NONE);
-						} else {
-							// 움직였으면 시간을 초기화.
-							startTime = System.currentTimeMillis();
 						}
+
 						mousediffX = mouseX;
 						mousediffY = mouseY;
 						

@@ -62,18 +62,22 @@ public class Controller {
 	public void setSyncTime(Duration time){
 		time = Duration.seconds((int)time.toSeconds());
 		syncTime = time;
-		
-		
 		System.out.println(time.toString());
-		System.out.println(time.toSeconds());
-		System.out.println((int)time.toSeconds());
+	}
+	
+	public Boolean isMouseMove(){
+		for (MoviePlayer moviePlayer : data) {
+			if(moviePlayer.mouseMoveFlag == true){
+				return true;
+			};
+		}
+		return false;
 	}
 	
 	public void sync(){
 		for (MoviePlayer moviePlayer : data) {
 			moviePlayer.player.seek(syncTime);
 		}
-		//allPlay();
 	}
 	
 	public void reflashTable(){
