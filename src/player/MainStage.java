@@ -217,9 +217,7 @@ public class MainStage extends Application {
 	}
 
 	public void testInit() {
-		// file = new
-		// File("C:\\Users\\Administrator\\Desktop\\[MV] IU(아이유) _ Friday(금요일에 만나요) (Feat. Jang Yi-jeong(장이정) of HISTORY(히스토리)).mp4");
-		file = new File(
-				"/Users/Deplax/Desktop/Where Am I (30 Second Short Film).mp4");
+		file = new File( "C:\\Users\\Administrator\\Desktop\\Where Am I (30 Second Short Film).mp4");
+		//file = new File( "/Users/Deplax/Desktop/Where Am I (30 Second Short Film).mp4");
 	}
 }

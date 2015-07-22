@@ -1,9 +1,7 @@
 package player;
 
 import javafx.collections.ObservableList;
-import javafx.scene.Cursor;
 import javafx.scene.control.TableView;
-import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
 
 public class Controller {
@@ -47,13 +45,18 @@ public class Controller {
 	}
 	
 	public Boolean isEveryplayerStop(){
-		Boolean result = false;
+		Boolean result = true;
 		for (MoviePlayer moviePlayer : data) {
-			System.out.println(moviePlayer.player.getStatus());
-			if(moviePlayer.player.getStatus() != MediaPlayer.Status.PLAYING)
-				result = true;
+			if(moviePlayer.stopFlag == false)
+				result = false;
 		}
 		return result;
+	}
+	
+	public void stopFlagInit(){
+		for (MoviePlayer moviePlayer : data) {
+			moviePlayer.stopFlag = false;
+		}
 	}
 	
 	public void setSyncTime(Duration time){

@@ -9,6 +9,8 @@ package player;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
@@ -44,6 +46,8 @@ public class MoviePlayer {
 	Scene scene = null;
 	Stage subStage = new Stage();
 
+	Boolean stopFlag = false;
+	
 	double mouseX = 0;
 	double mouseY = 0;
 	double mousediffX = 0;
@@ -112,6 +116,7 @@ public class MoviePlayer {
 					// //subStage.setFullScreen(true);
 					// con.fullscreen();
 					// }
+					System.out.println(player.getStatus());
 					System.out.println(player.getCurrentTime());
 				}
 				if (event.getCode() == KeyCode.SPACE) {
@@ -160,9 +165,12 @@ public class MoviePlayer {
 		player.setOnEndOfMedia(new Runnable() {
 			@Override
 			public void run() {
+				stopFlag = true;
 				if (con.isEveryplayerStop()) {
-					System.out.println("kuku");
+					con.stopFlagInit();
+					System.out.println("isEveryplayerStop");
 					con.setSyncTime(new Duration(0));
+					con.sync();
 					con.allPause();
 					con.sync();
 					con.allPlay();
@@ -176,19 +184,19 @@ public class MoviePlayer {
 			public void run() {
 
 				System.out.println("kku");
-				System.out.println(endTime - startTime);
-
-				// 마우스가 움직이지 않았으면.
-				if (mouseX == mousediffX && mouseY == mousediffY) {
-					endTime = System.currentTimeMillis();
-					if (endTime - startTime > 5000)
-						scene.setCursor(Cursor.NONE);
-				} else {
-					// 움직였으면 시간을 초기화.
-					startTime = System.currentTimeMillis();
-				}
-				mousediffX = mouseX;
-				mousediffY = mouseY;
+//				System.out.println(endTime - startTime);
+//
+//				// 마우스가 움직이지 않았으면.
+//				if (mouseX == mousediffX && mouseY == mousediffY) {
+//					endTime = System.currentTimeMillis();
+//					if (endTime - startTime > 5000)
+//						scene.setCursor(Cursor.NONE);
+//				} else {
+//					// 움직였으면 시간을 초기화.
+//					startTime = System.currentTimeMillis();
+//				}
+//				mousediffX = mouseX;
+//				mousediffY = mouseY;
 			}
 		});
 
@@ -207,6 +215,22 @@ public class MoviePlayer {
 					public void changed(
 							ObservableValue<? extends Duration> observable,
 							Duration oldValue, Duration newValue) {
+
+						System.out.println(endTime - startTime);
+						System.out.println(startTime);
+		
+						// 마우스가 움직이지 않았으면.
+						if (mouseX == mousediffX && mouseY == mousediffY) {
+							endTime = System.currentTimeMillis();
+							if (endTime - startTime > 5000)
+								scene.setCursor(Cursor.NONE);
+						} else {
+							// 움직였으면 시간을 초기화.
+							startTime = System.currentTimeMillis();
+						}
+						mousediffX = mouseX;
+						mousediffY = mouseY;
+						
 						updateValue();
 						con.reflashTable();
 					}
